@@ -16,12 +16,10 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.post('/corrigir', async (req, res) => {
-  const { pergunta, respostaUsuario } = req.body;
+  const {respostaUsuario } = req.body;
 
   try {
     const prompt = `
-    Pergunta: ${pergunta}
-    Resposta do usuário: ${respostaUsuario}
     Avalie a resposta do usuário. Indique se está correta e forneça explicações.
     Voce está avaliando um exercicio passado pra um candidado:
     Escrever Cenários em Gherkin para o Site Sauce Demo
@@ -48,6 +46,8 @@ app.post('/corrigir', async (req, res) => {
     Lembrando que o usuario devera criar novos cenários e não enviar apenas os cenarios informados no template.
     Responda em no máximo 100 palavras. Não inclua justificativas adicionais.
     Responda tambem sempre em primeira pessoa.
+
+    Resposta do usuário: ${respostaUsuario}
     `;
 
     const completion = await openai.createChatCompletion({
