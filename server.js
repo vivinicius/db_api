@@ -20,7 +20,13 @@ app.post('/corrigir', async (req, res) => {
 
   try {
     const prompt = `
-    Avalie a resposta do usuário. Indique se está correta e forneça explicações.
+    ${respostaUsuario}
+    `;
+
+    const completion = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo', // Modelo atualizado
+      messages: [
+        { role: 'system', content: `Avalie a resposta do usuário. Indique se está correta e forneça explicações.
     Voce está avaliando um exercicio passado pra um candidado:
     Escrever Cenários em Gherkin para o Site Sauce Demo
     Neste exercício, o candidato deve criar um arquivo .feature com pelo menos 5 cenários usando a linguagem Gherkin para o site Sauce Demo.
@@ -29,15 +35,15 @@ app.post('/corrigir', async (req, res) => {
     Template inicial:
     Feature: Funcionalidades do site Sauce Demo
 
-  # Cenário 1: Login com sucesso
-  Scenario: Login com credenciais válidas
+    # Cenário 1: Login com sucesso
+    Scenario: Login com credenciais válidas
     Given que estou na página inicial
     When eu insiro o usuário "standard_user" e senha "secret_sauce"
     And clico no botão de login
     Then devo ser redirecionado para a página de produtos
 
-  # Cenário 2: Login com credenciais inválidas
-  Scenario: Login com credenciais inválidas
+    # Cenário 2: Login com credenciais inválidas
+    Scenario: Login com credenciais inválidas
     Given que estou na página inicial
     When eu insiro o usuário "invalid_user" e senha "invalid_password"
     And clico no botão de login
@@ -50,13 +56,7 @@ app.post('/corrigir', async (req, res) => {
     
     Exemplo:"Correto, resto da correção" ou "Incorreto, resto da correção"
 
-    Resposta do usuário: ${respostaUsuario}
-    `;
-
-    const completion = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo', // Modelo atualizado
-      messages: [
-        { role: 'system', content: 'Você é um avaliador de respostas de programação.' },
+    Resposta do usuário: ` },
         { role: 'user', content: prompt },
       ],
       max_tokens: 150,
