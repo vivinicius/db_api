@@ -45,7 +45,10 @@ app.post('/corrigir', async (req, res) => {
 
     Lembrando que o usuario devera criar novos cenários e não enviar apenas os cenarios informados no template.
     Responda em no máximo 100 palavras. Não inclua justificativas adicionais.
-    Responda tambem sempre em primeira pessoa.
+    
+    Sua resposta deve sempre começar com Correto ou Incorreto, não deve ter meio termo.
+    
+    Exemplo:"Correto, resto da correção" ou "Incorreto, resto da correção"
 
     Resposta do usuário: ${respostaUsuario}
     `;
