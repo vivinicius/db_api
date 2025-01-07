@@ -56,7 +56,8 @@ app.post('/corrigir', async (req, res) => {
     
     Exemplo:"Correto, resto da correção" ou "Incorreto, resto da correção"
 
-    Nao esqueça de sempre verificar se o usuario está fazendo ou nao cenários diferentes dos do template.
+    Nao esqueça de sempre verificar se o usuario está fazendo ou nao cenários diferentes dos do template. Leia os cenários fornecidos na resposta do usuário
+    e se por acaso nao tiver nenhum diferente dos dois cenarios do template a resposta está incorreta.
 
     Resposta do usuário: ` },
         { role: 'user', content: prompt },
