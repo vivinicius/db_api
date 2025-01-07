@@ -27,7 +27,7 @@ app.post('/corrigir', async (req, res) => {
     Escrever Cenários em Gherkin para o Site Sauce Demo
     Neste exercício, o candidato deve criar um arquivo .feature com pelo menos 5 cenários usando a linguagem Gherkin para o site Sauce Demo.
     Esses cenários devem cobrir funcionalidades como login, logout, navegação e validações básicas.
-    O objetivo é que o usuario código abaixo e, com base no template inicial fornecido, escreva cenários adicionais para situações do site.
+    O objetivo é que o usuario copie o código abaixo e, com base no template inicial fornecido, escreva cenários adicionais para situações do site.
     Template inicial:
     Feature: Funcionalidades do site Sauce Demo
 
@@ -44,8 +44,10 @@ app.post('/corrigir', async (req, res) => {
     When eu insiro o usuário "invalid_user" e senha "invalid_password"
     And clico no botão de login
     Then devo ver uma mensagem de erro dizendo "Epic sadface: Username and password do not match any user in this service."
-    
+
+    Lembrando que o usuario devera criar novos cenários e não enviar apenas os cenarios informados no template.
     Responda em no máximo 100 palavras. Não inclua justificativas adicionais.
+    Responda tambem sempre em primeira pessoa.
     `;
 
     const completion = await openai.createChatCompletion({
