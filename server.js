@@ -16,50 +16,22 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.post('/corrigir', async (req, res) => {
-  const {respostaUsuario } = req.body;
+  const {respostaUsuario, instrucao } = req.body;
 
   try {
+
+    const instruction = `
+    ${instrucao}
+    `;
+
     const prompt = `
     ${respostaUsuario}
     `;
-
+  
     const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo', // Modelo atualizado
       messages: [
-        { role: 'system', content: `Avalie a resposta do usuário. Indique se está correta e forneça explicações.
-    Voce está avaliando um exercicio passado pra um candidado:
-    Escrever Cenários em Gherkin para o Site Sauce Demo
-    Neste exercício, o candidato deve criar um arquivo .feature com pelo menos 5 cenários usando a linguagem Gherkin para o site Sauce Demo.
-    Esses cenários devem cobrir funcionalidades como login, logout, navegação e validações básicas.
-    O objetivo é que o usuario copie o código abaixo e, com base no template inicial fornecido, escreva cenários adicionais para situações do site.
-    Template inicial:
-    Feature: Funcionalidades do site Sauce Demo
-
-    # Cenário 1: Login com sucesso
-    Scenario: Login com credenciais válidas
-    Given que estou na página inicial
-    When eu insiro o usuário "standard_user" e senha "secret_sauce"
-    And clico no botão de login
-    Then devo ser redirecionado para a página de produtos
-
-    # Cenário 2: Login com credenciais inválidas
-    Scenario: Login com credenciais inválidas
-    Given que estou na página inicial
-    When eu insiro o usuário "invalid_user" e senha "invalid_password"
-    And clico no botão de login
-    Then devo ver uma mensagem de erro dizendo "Epic sadface: Username and password do not match any user in this service."
-
-    Lembrando que o usuario devera criar novos cenários e não enviar apenas os cenarios informados no template.
-    Responda em no máximo 100 palavras. Não inclua justificativas adicionais.
-    
-    Sua resposta deve sempre começar com Correto ou Incorreto, não deve ter meio termo.
-    
-    Exemplo:"Correto, resto da correção" ou "Incorreto, resto da correção"
-
-    Nao esqueça de sempre verificar se o usuario está fazendo ou nao cenários diferentes dos do template. Leia os cenários fornecidos na resposta do usuário
-    e se por acaso nao tiver nenhum diferente dos dois cenarios do template a resposta está incorreta.
-
-    Resposta do usuário: ` },
+        { role: 'system', content: instruction },
         { role: 'user', content: prompt },
       ],
       max_tokens: 150,
