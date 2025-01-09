@@ -15,11 +15,12 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+// Endpoint para correção
 app.post('/corrigir', async (req, res) => {
-  const {respostaUsuario, instrucao } = req.body;
+  const { respostaUsuario, instrucao } = req.body;
 
   try {
-
+    // Configura a mensagem de sistema com a instrução e o prompt do usuário
     const instruction = `
     ${instrucao}
     `;
@@ -28,15 +29,17 @@ app.post('/corrigir', async (req, res) => {
     ${respostaUsuario}
     `;
   
+    // Solicita a resposta ao modelo GPT-4
     const completion = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo', // Modelo atualizado
+      model: 'gpt-4', // Altere para o GPT-4
       messages: [
         { role: 'system', content: instruction },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 150,
+      max_tokens: 500, // Ajuste o limite de tokens conforme necessário
     });
 
+    // Retorna a resposta da API
     res.json({ correção: completion.data.choices[0].message.content.trim() });
   } catch (error) {
     console.error(error.response?.data || error.message);
@@ -44,5 +47,6 @@ app.post('/corrigir', async (req, res) => {
   }
 });
 
+// Inicialização do servidor
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
