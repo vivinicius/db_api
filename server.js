@@ -36,7 +36,7 @@ app.post('/corrigir', async (req, res) => {
         { role: 'system', content: instruction },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 500, // Ajuste o limite de tokens conforme necessário
+      max_tokens: 2000, // Ajuste o limite de tokens conforme necessário
     });
 
     // Retorna a resposta da API
