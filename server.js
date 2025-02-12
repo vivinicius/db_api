@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require('openai');
+const proxy = require('express-http-proxy'); // Importa o proxy
 
 require('dotenv').config();
 
@@ -15,28 +16,22 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Endpoint para correção
+// 📌 Rota para corrigir respostas do usuário
 app.post('/corrigir', async (req, res) => {
   const { respostaUsuario, instrucao } = req.body;
 
   try {
-    // Configura a mensagem de sistema com a instrução e o prompt do usuário
-    const instruction = `
-    ${instrucao}
-    `;
-
-    const prompt = `
-    ${respostaUsuario}
-    `;
+    const instruction = `${instrucao}`;
+    const prompt = `${respostaUsuario}`;
   
-    // Solicita a resposta ao modelo GPT-4
+    // Solicita resposta ao modelo GPT-4
     const completion = await openai.createChatCompletion({
-      model: 'gpt-4', // Altere para o GPT-4
+      model: 'gpt-4',
       messages: [
         { role: 'system', content: instruction },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 2000, // Ajuste o limite de tokens conforme necessário
+      max_tokens: 2000,
     });
 
     // Retorna a resposta da API
@@ -46,6 +41,14 @@ app.post('/corrigir', async (req, res) => {
     res.status(500).json({ error: 'Erro ao processar a resposta.' });
   }
 });
+
+// 📌 Adicionando Proxy Reverso para o site do Sicredi
+app.use('/proxy', proxy('https://sicredi-desafio-qe.readme.io', {
+  proxyReqOptDecorator(reqOpts) {
+    reqOpts.headers['X-Frame-Options'] = 'ALLOWALL'; // Remove restrição do iframe (tentativa)
+    return reqOpts;
+  }
+}));
 
 // Inicialização do servidor
 const PORT = 5000;
