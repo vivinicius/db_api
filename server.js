@@ -44,14 +44,13 @@ app.get('/proxy-sicredi', async (req, res) => {
   try {
     console.log('Iniciando Puppeteer no Render...');
 
-    // Configuração para usar o Chrome instalado no sistema
+    // Configuração do Puppeteer sem caminho fixo
     const browser = await puppeteer.launch({
-      headless: 'new', 
-      executablePath: '/usr/bin/google-chrome-stable', // Caminho para o Chrome instalado
+      headless: 'new',
       args: [
-        '--no-sandbox', 
+        '--no-sandbox',
         '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage', 
+        '--disable-dev-shm-usage',
         '--disable-gpu',
         '--disable-software-rasterizer',
         '--disable-extensions'
@@ -64,7 +63,7 @@ app.get('/proxy-sicredi', async (req, res) => {
     await page.setDefaultNavigationTimeout(60000);
 
     await page.goto('https://sicredi-desafio-qe.readme.io/reference/home', {
-      waitUntil: 'load', // Espera a página carregar completamente
+      waitUntil: 'load',
     });
 
     // Captura o HTML renderizado
