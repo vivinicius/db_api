@@ -42,15 +42,29 @@ app.post('/corrigir', async (req, res) => {
 // 📌 Rota do Puppeteer para capturar a página do Sicredi
 app.get('/proxy-sicredi', async (req, res) => {
   try {
-    console.log('Iniciando Puppeteer...');
+    console.log('Iniciando Puppeteer no Render...');
+
+    // Configuração para usar o Chrome instalado no sistema
     const browser = await puppeteer.launch({
-      headless: 'new', // Para rodar sem abrir janela
-      args: ['--no-sandbox', '--disable-setuid-sandbox'], // Necessário para rodar no Render
+      headless: 'new', 
+      executablePath: '/usr/bin/google-chrome-stable', // Caminho para o Chrome instalado
+      args: [
+        '--no-sandbox', 
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage', 
+        '--disable-gpu',
+        '--disable-software-rasterizer',
+        '--disable-extensions'
+      ]
     });
-    
+
     const page = await browser.newPage();
+    
+    // Aumenta o tempo limite para evitar falhas no carregamento
+    await page.setDefaultNavigationTimeout(60000);
+
     await page.goto('https://sicredi-desafio-qe.readme.io/reference/home', {
-      waitUntil: 'networkidle2', // Espera a página carregar completamente
+      waitUntil: 'load', // Espera a página carregar completamente
     });
 
     // Captura o HTML renderizado
