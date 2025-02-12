@@ -2,13 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require('openai');
-const proxy = require('express-http-proxy'); // Importa o proxy
+const puppeteer = require('puppeteer');
 
 require('dotenv').config();
 
-// Configuração do OpenAI
 const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY, // Use uma variável de ambiente
+  apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
 
@@ -24,7 +23,6 @@ app.post('/corrigir', async (req, res) => {
     const instruction = `${instrucao}`;
     const prompt = `${respostaUsuario}`;
   
-    // Solicita resposta ao modelo GPT-4
     const completion = await openai.createChatCompletion({
       model: 'gpt-4',
       messages: [
@@ -34,7 +32,6 @@ app.post('/corrigir', async (req, res) => {
       max_tokens: 2000,
     });
 
-    // Retorna a resposta da API
     res.json({ correção: completion.data.choices[0].message.content.trim() });
   } catch (error) {
     console.error(error.response?.data || error.message);
@@ -42,14 +39,31 @@ app.post('/corrigir', async (req, res) => {
   }
 });
 
-// 📌 Adicionando Proxy Reverso para o site do Sicredi
-app.use('/proxy', proxy('https://sicredi-desafio-qe.readme.io', {
-  proxyReqOptDecorator(reqOpts) {
-    reqOpts.headers['X-Frame-Options'] = 'ALLOWALL'; // Remove restrição do iframe (tentativa)
-    return reqOpts;
+// 📌 Rota do Puppeteer para capturar a página do Sicredi
+app.get('/proxy-sicredi', async (req, res) => {
+  try {
+    console.log('Iniciando Puppeteer...');
+    const browser = await puppeteer.launch({
+      headless: 'new', // Para rodar sem abrir janela
+      args: ['--no-sandbox', '--disable-setuid-sandbox'], // Necessário para rodar no Render
+    });
+    
+    const page = await browser.newPage();
+    await page.goto('https://sicredi-desafio-qe.readme.io/reference/home', {
+      waitUntil: 'networkidle2', // Espera a página carregar completamente
+    });
+
+    // Captura o HTML renderizado
+    const content = await page.content();
+    await browser.close();
+
+    res.send(content);
+  } catch (error) {
+    console.error('Erro ao carregar página com Puppeteer:', error);
+    res.status(500).json({ error: 'Erro ao carregar a página.' });
   }
-}));
+});
 
 // Inicialização do servidor
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
