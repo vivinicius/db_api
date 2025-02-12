@@ -1,15 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { Configuration, OpenAIApi } = require('openai');
+const OpenAI = require('openai');
 const puppeteer = require('puppeteer');
 
 require('dotenv').config();
 
-const configuration = new Configuration({
+// 📌 Configuração correta para a API da OpenAI
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
 const app = express();
 app.use(cors());
@@ -23,7 +23,7 @@ app.post('/corrigir', async (req, res) => {
     const instruction = `${instrucao}`;
     const prompt = `${respostaUsuario}`;
   
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
         { role: 'system', content: instruction },
@@ -32,7 +32,7 @@ app.post('/corrigir', async (req, res) => {
       max_tokens: 2000,
     });
 
-    res.json({ correção: completion.data.choices[0].message.content.trim() });
+    res.json({ correção: completion.choices[0].message.content.trim() });
   } catch (error) {
     console.error(error.response?.data || error.message);
     res.status(500).json({ error: 'Erro ao processar a resposta.' });
@@ -44,7 +44,6 @@ app.get('/proxy-sicredi', async (req, res) => {
   try {
     console.log('Iniciando Puppeteer no Render...');
 
-    // Configuração do Puppeteer sem caminho fixo
     const browser = await puppeteer.launch({
       headless: 'new',
       args: [
@@ -58,15 +57,12 @@ app.get('/proxy-sicredi', async (req, res) => {
     });
 
     const page = await browser.newPage();
-    
-    // Aumenta o tempo limite para evitar falhas no carregamento
     await page.setDefaultNavigationTimeout(60000);
 
     await page.goto('https://sicredi-desafio-qe.readme.io/reference/home', {
       waitUntil: 'load',
     });
 
-    // Captura o HTML renderizado
     const content = await page.content();
     await browser.close();
 
