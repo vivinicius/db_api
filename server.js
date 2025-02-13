@@ -66,7 +66,7 @@ app.get('/proxy-sicredi', async (req, res) => {
     });
 
     console.log('Aguardando 5 segundos para garantir carregamento...');
-    await page.waitForTimeout(5000);
+    await page.evaluate(() => new Promise(res => setTimeout(res, 5000)));
 
     console.log('Fazendo scroll para carregar elementos dinâmicos...');
     await page.evaluate(() => {
@@ -74,7 +74,7 @@ app.get('/proxy-sicredi', async (req, res) => {
     });
 
     console.log('Aguardando mais 3 segundos para carregamento completo...');
-    await page.waitForTimeout(3000);
+    await page.evaluate(() => new Promise(res => setTimeout(res, 3000)));
 
     console.log('Capturando conteúdo renderizado...');
     const content = await page.content();
