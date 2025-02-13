@@ -37,7 +37,7 @@ app.get('/proxy-sicredi', async (req, res) => {
     const page = await browser.newPage();
     await page.setDefaultNavigationTimeout(60000);
 
-    await page.goto('https://sicredi-desafio-qe.readme.io/reference/home', {
+    await page.goto('https://sicredi-desafio-qe.readme.io', {
       waitUntil: 'load',
     });
 
