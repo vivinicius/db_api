@@ -14,14 +14,37 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// 📌 Rota do Puppeteer para capturar a página do Sicredi
+// 📌 Rota para correção de respostas com OpenAI
+app.post('/corrigir', async (req, res) => {
+  const { respostaUsuario, instrucao } = req.body;
+
+  try {
+    const instruction = `${instrucao}`;
+    const prompt = `${respostaUsuario}`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: instruction },
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: 2000,
+    });
+
+    res.json({ correção: completion.choices[0].message.content.trim() });
+  } catch (error) {
+    console.error('Erro ao processar resposta:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Erro ao processar a resposta.' });
+  }
+});
+
+// 📌 Rota para capturar a página do Sicredi com Puppeteer
 app.get('/proxy-sicredi', async (req, res) => {
   try {
     console.log('Iniciando Puppeteer no Render...');
 
-    // 🔥 NÃO defina executablePath, deixe o Puppeteer usar o próprio Chromium
     const browser = await puppeteer.launch({
-      headless: 'new',
+      headless: 'new', // Mantém headless para funcionar corretamente no Render
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
