@@ -19,9 +19,9 @@ app.get('/proxy-sicredi', async (req, res) => {
   try {
     console.log('Iniciando Puppeteer no Render...');
 
+    // 🔥 NÃO defina executablePath, deixe o Puppeteer usar o próprio Chromium
     const browser = await puppeteer.launch({
       headless: 'new',
-      executablePath: '/usr/bin/chromium-browser', // 🔥 Caminho correto do Chromium
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
