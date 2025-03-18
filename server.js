@@ -102,7 +102,7 @@ ${instrucao}
 
     // Chamada para OpenAI
     const completion = await openai.createChatCompletion({
-      model: 'gpt-4',
+      model: 'gpt-4-turbo-1106',
       messages: [
         { role: 'system', content: instruction },
         { role: 'user', content: prompt },
