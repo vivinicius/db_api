@@ -54,7 +54,7 @@ async function getGitHubRepoContent(repoUrl) {
 
     let fullContent = '';
 
-    for (const file of files.slice(0, 20)) { // Limite inicial 20 arquivos
+    for (const file of files.slice(0, 50)) {
       console.log(`Lendo arquivo: ${file.path}`);
       const fileResponse = await axios.get(`https://api.github.com/repos/${owner}/${repo}/contents/${file.path}`, {
         headers,
