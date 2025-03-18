@@ -2,8 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require('openai');
-const axios = require('axios'); // Importação do axios
-require('dotenv').config();
+const axios = require('axios');
+require('dotenv').config(); // .env com GITHUB_TOKEN e OPENAI_API_KEY
 
 // Configuração do OpenAI
 const configuration = new Configuration({
@@ -15,18 +15,25 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// ===== NOVA FUNÇÃO GitHub =====
+// === Função para buscar conteúdo do repositório do GitHub ===
 async function getGitHubRepoContent(repoUrl) {
   try {
+    // Extrair dono e nome do repositório
     const match = repoUrl.match(/github\.com\/(.*?)\/(.*?)(\.git|$)/);
     if (!match) throw new Error('URL do repositório inválida.');
 
     const owner = match[1];
     const repo = match[2];
 
-    // Busca a árvore completa
+    // Headers com token
+    const headers = {
+      'Accept': 'application/vnd.github.v3+json',
+      'Authorization': `token ${process.env.GITHUB_TOKEN}`, // Token aqui!
+    };
+
+    // Busca a árvore de arquivos
     const treeResponse = await axios.get(`https://api.github.com/repos/${owner}/${repo}/git/trees/main?recursive=1`, {
-      headers: { 'Accept': 'application/vnd.github.v3+json' },
+      headers,
     });
 
     const files = treeResponse.data.tree.filter(file =>
@@ -38,10 +45,10 @@ async function getGitHubRepoContent(repoUrl) {
 
     let fullContent = '';
 
-    // Lê os arquivos (limite de 20 arquivos no início)
+    // Itera sobre os arquivos (limite inicial de 20)
     for (const file of files.slice(0, 20)) {
       const fileResponse = await axios.get(`https://api.github.com/repos/${owner}/${repo}/contents/${file.path}`, {
-        headers: { 'Accept': 'application/vnd.github.v3+json' },
+        headers,
       });
 
       const content = Buffer.from(fileResponse.data.content, 'base64').toString('utf-8');
@@ -56,12 +63,12 @@ async function getGitHubRepoContent(repoUrl) {
   }
 }
 
-// ===== ENDPOINT CORRIGIR ALTERADO =====
+// === Endpoint corrigir ===
 app.post('/corrigir', async (req, res) => {
   const { respostaUsuario, instrucao } = req.body;
 
   try {
-    // Busca conteúdo do repositório
+    // Busca conteúdo do GitHub
     const repoContent = await getGitHubRepoContent(respostaUsuario);
 
     const prompt = `
@@ -73,21 +80,21 @@ app.post('/corrigir', async (req, res) => {
     ${instrucao}
     `;
 
-    // OpenAI request
+    // Chamada OpenAI
     const completion = await openai.createChatCompletion({
       model: 'gpt-4',
       messages: [
         { role: 'system', content: instruction },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 10000,
+      max_tokens: 2000, // Ajustável conforme tamanho do projeto
     });
 
     res.json({ correção: completion.data.choices[0].message.content.trim() });
 
   } catch (error) {
     console.error(error.message);
-    res.status(500).json({ error: 'Erro ao processar a resposta.' });
+    res.status(500).json({ error: 'Erro ao corrigir a resposta.' });
   }
 });
 
