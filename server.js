@@ -44,8 +44,11 @@ async function getGitHubRepoContent(repoUrl) {
       file.type === 'blob' &&
       !file.path.includes('node_modules') &&
       !file.path.includes('.git') &&
-      !file.path.endsWith('.md')
-    );
+      !file.path.includes('target') &&
+      !file.path.includes('.idea') &&
+      !file.path.endsWith('.log') &&
+      !file.path.endsWith('.env')
+    );    
 
     console.log(`Encontrados ${files.length} arquivos. Iniciando leitura...`);
 
@@ -102,7 +105,7 @@ ${instrucao}
 
     // Chamada para OpenAI
     const completion = await openai.createChatCompletion({
-      model: 'gpt-4o',
+      model: 'gpt-4o', 
       messages: [
         { role: 'system', content: instruction },
         { role: 'user', content: prompt },
