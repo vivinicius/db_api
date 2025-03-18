@@ -102,12 +102,12 @@ ${instrucao}
 
     // Chamada para OpenAI
     const completion = await openai.createChatCompletion({
-      model: 'gpt-4o', // OU 'gpt-4-turbo-1106' se preferir
+      model: 'gpt-4o',
       messages: [
         { role: 'system', content: instruction },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 4000, // Não precisa mais ser 2000, pode aumentar se quiser
+      max_tokens: 4000,
     });
 
     console.log('Resposta da OpenAI recebida com sucesso.');
