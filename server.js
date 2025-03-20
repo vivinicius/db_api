@@ -87,30 +87,49 @@ async function getGitLabRepoContent(repoUrl) {
       'PRIVATE-TOKEN': process.env.GITLAB_TOKEN,
     };
 
-    // Buscar lista de arquivos
-    const treeResponse = await axios.get(`https://gitlab.com/api/v4/projects/${projectPath}/repository/tree?recursive=true`, { headers });
-    console.log(`Resposta da árvore:`, JSON.stringify(treeResponse.data, null, 2));
-
-    const files = treeResponse.data.filter(file =>
-      file.type === 'blob' &&
-      !file.path.includes('node_modules') &&
-      !file.path.includes('.git') &&
-      !file.path.includes('target') &&
-      !file.path.includes('.idea') &&
-      !file.path.endsWith('.log') &&
-      !file.path.endsWith('.env')
-    );
+    // Buscar branch padrão
+    const projectInfo = await axios.get(`https://gitlab.com/api/v4/projects/${projectPath}`, { headers });
+    const defaultBranch = projectInfo.data.default_branch;
+    console.log(`Branch padrão detectado: ${defaultBranch}`);
 
     let fullContent = '';
 
-    for (const file of files.slice(0, 50)) {
-      console.log(`Lendo arquivo GitLab: ${file.path}`);
-      const fileResponse = await axios.get(`https://gitlab.com/api/v4/projects/${projectPath}/repository/files/${encodeURIComponent(file.path)}/raw?ref=main`, { headers });
-      const content = fileResponse.data;
-      fullContent += `\n\n===== FILE: ${file.path} =====\n${content}\n`;
+    // Função recursiva para percorrer pastas
+    async function processDirectory(path = '') {
+      const response = await axios.get(`https://gitlab.com/api/v4/projects/${projectPath}/repository/tree`, {
+        headers,
+        params: {
+          recursive: false,
+          ref: defaultBranch,
+          path: path,
+        }
+      });
+
+      const items = response.data;
+
+      for (const item of items) {
+        if (item.type === 'blob') {
+          console.log(`Lendo arquivo: ${item.path}`);
+          const fileResponse = await axios.get(`https://gitlab.com/api/v4/projects/${projectPath}/repository/files/${encodeURIComponent(item.path)}/raw`, {
+            headers,
+            params: {
+              ref: defaultBranch,
+            }
+          });
+          const content = fileResponse.data;
+          fullContent += `\n\n===== FILE: ${item.path} =====\n${content}\n`;
+        } else if (item.type === 'tree') {
+          // Se for pasta, chama recursivamente
+          await processDirectory(item.path);
+        }
+      }
     }
 
+    // Inicia a busca do root
+    await processDirectory();
+
     console.log('Todos os arquivos lidos com sucesso (GitLab).');
+
     return fullContent;
 
   } catch (error) {
