@@ -35,7 +35,6 @@ async function getGitHubRepoContent(repoUrl) {
 
     // Busca a árvore completa de arquivos (branch: main)
     const treeResponse = await axios.get(`https://api.github.com/repos/${owner}/${repo}/git/trees/main?recursive=1`, { headers });
-    console.log(`Resposta da árvore:`, JSON.stringify(treeResponse.data, null, 2));
 
     const files = treeResponse.data.tree.filter(file =>
       file.type === 'blob' &&
@@ -90,6 +89,7 @@ async function getGitLabRepoContent(repoUrl) {
 
     // Buscar lista de arquivos
     const treeResponse = await axios.get(`https://gitlab.com/api/v4/projects/${projectPath}/repository/tree?recursive=true`, { headers });
+    console.log(`Resposta da árvore:`, JSON.stringify(treeResponse.data, null, 2));
 
     const files = treeResponse.data.filter(file =>
       file.type === 'blob' &&
