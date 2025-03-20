@@ -35,6 +35,7 @@ async function getGitHubRepoContent(repoUrl) {
 
     // Busca a árvore completa de arquivos (branch: main)
     const treeResponse = await axios.get(`https://api.github.com/repos/${owner}/${repo}/git/trees/main?recursive=1`, { headers });
+    console.log(`Resposta da árvore:`, JSON.stringify(treeResponse.data, null, 2));
 
     const files = treeResponse.data.tree.filter(file =>
       file.type === 'blob' &&
@@ -54,7 +55,7 @@ async function getGitHubRepoContent(repoUrl) {
       const content = Buffer.from(fileResponse.data.content, 'base64').toString('utf-8');
       fullContent += `\n\n===== FILE: ${file.path} =====\n${content}\n`;
     }
-
+    
     console.log('Todos os arquivos lidos com sucesso (GitHub).');
     return fullContent;
 
