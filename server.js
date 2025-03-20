@@ -111,6 +111,23 @@ async function getGitLabRepoContent(repoUrl) {
       const items = response.data;
 
       for (const item of items) {
+        // === FILTRO para ignorar pastas ou arquivos desnecessários ===
+        if (
+          item.path.includes('node_modules') ||
+          item.path.includes('.git') ||
+          item.path.includes('target') ||
+          item.path.includes('.idea') ||
+          item.path.endsWith('.log') ||
+          item.path.endsWith('.lock') ||
+          item.path.endsWith('.gif') ||
+          item.path.endsWith('.png') ||
+          item.path.endsWith('.img') ||
+          (item.path.endsWith('.md') && item.path !== 'README.md') // Ignora outros .md exceto README
+        ) {
+          console.log(`Ignorando: ${item.path}`);
+          continue;
+        }
+
         if (item.type === 'blob') {
           console.log(`Lendo arquivo: ${item.path}`);
           const fileResponse = await axios.get(`https://gitlab.com/api/v4/projects/${projectPath}/repository/files/${encodeURIComponent(item.path)}/raw`, {
@@ -132,6 +149,12 @@ async function getGitLabRepoContent(repoUrl) {
     await processDirectory();
 
     console.log('Todos os arquivos lidos com sucesso (GitLab).');
+
+    // === Limitar tamanho total enviado para OpenAI ===
+    if (fullContent.length > 25000) { // Ajuste esse limite como quiser
+      console.log('Conteúdo muito grande, truncando...');
+      fullContent = fullContent.substring(0, 25000);
+    }
 
     return fullContent;
 
