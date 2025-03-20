@@ -38,8 +38,9 @@ async function getGitHubRepoContent(repoUrl) {
 
     const files = treeResponse.data.tree.filter(file =>
       file.type === 'blob' &&
+      file.path !== '.git' && // Não ignora arquivos com .git no nome
+      !file.path.startsWith('.git/') && // Só ignora o diretório .git
       !file.path.includes('node_modules') &&
-      !file.path.includes('.git') &&
       !file.path.includes('target') &&
       !file.path.includes('.idea') &&
       !file.path.endsWith('.log') &&
@@ -47,7 +48,7 @@ async function getGitHubRepoContent(repoUrl) {
       !file.path.endsWith('.gif') &&
       !file.path.endsWith('.png') &&
       !file.path.endsWith('.img')
-    );
+    );    
 
     let fullContent = '';
 
@@ -113,20 +114,22 @@ async function getGitLabRepoContent(repoUrl) {
       for (const item of items) {
         // === FILTRO para ignorar pastas ou arquivos desnecessários ===
         if (
+          item.path.startsWith('.git/') || // Apenas o diretório .git
+          item.path === '.git' ||          // Diretório .git raiz
           item.path.includes('node_modules') ||
-          item.path.includes('.git') ||
           item.path.includes('target') ||
           item.path.includes('.idea') ||
+          item.path.includes('.jsons') ||
           item.path.endsWith('.log') ||
           item.path.endsWith('.lock') ||
           item.path.endsWith('.gif') ||
           item.path.endsWith('.png') ||
-          item.path.endsWith('.img') ||
-          (item.path.endsWith('.md') && item.path !== 'README.md') // Ignora outros .md exceto README
+          item.path.endsWith('.img')
         ) {
           console.log(`Ignorando: ${item.path}`);
           continue;
         }
+        
 
         if (item.type === 'blob') {
           console.log(`Lendo arquivo: ${item.path}`);
