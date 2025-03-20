@@ -43,7 +43,10 @@ async function getGitHubRepoContent(repoUrl) {
       !file.path.includes('target') &&
       !file.path.includes('.idea') &&
       !file.path.endsWith('.log') &&
-      !file.path.endsWith('.env')
+      !file.path.endsWith('.env') &&
+      !file.path.endsWith('.gif') &&
+      !file.path.endsWith('.png') &&
+      !file.path.endsWith('.img')
     );
 
     let fullContent = '';
