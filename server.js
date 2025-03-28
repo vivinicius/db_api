@@ -147,9 +147,9 @@ async function getGitLabRepoContent(repoUrl) {
     console.log('Todos os arquivos lidos com sucesso (GitLab).');
 
     // === Limitar tamanho total enviado para OpenAI (opcional) ===
-    if (fullContent.length > 25000) {
+    if (fullContent.length > 100000) {
       console.log('Conteúdo muito grande, truncando...');
-      fullContent = fullContent.substring(0, 25000);
+      fullContent = fullContent.substring(0, 100000);
     }
 
     return fullContent;
