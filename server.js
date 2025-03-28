@@ -3,9 +3,9 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require('openai');
 const axios = require('axios');
-require('dotenv').config(); // Carrega as variáveis do .env
+require('dotenv').config();
 
-// Configuração do OpenAI
+// === Configuração do OpenAI ===
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -14,6 +14,25 @@ const openai = new OpenAIApi(configuration);
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+/* ===========================================
+  Função centralizada para ignorar arquivos/pastas
+=========================================== */
+function shouldIgnoreFile(path) {
+  return (
+    path.startsWith('.git/') || path === '.git' || // Ignora só o diretório .git
+    path.includes('node_modules') ||
+    path.includes('target') ||
+    path.includes('.idea') ||
+    path.includes('.jsons') || // relatórios mochawesome
+    path.endsWith('.log') ||
+    path.endsWith('.lock') ||
+    path.endsWith('.gif') ||
+    path.endsWith('.png') ||
+    path.endsWith('.img') ||
+    path.endsWith('.env')
+  );
+}
 
 /* ===========================================
     Função para buscar conteúdo do GitHub
@@ -33,22 +52,12 @@ async function getGitHubRepoContent(repoUrl) {
       'Authorization': `token ${process.env.GITHUB_TOKEN}`,
     };
 
-    // Busca a árvore completa de arquivos (branch: main)
     const treeResponse = await axios.get(`https://api.github.com/repos/${owner}/${repo}/git/trees/main?recursive=1`, { headers });
 
     const files = treeResponse.data.tree.filter(file =>
       file.type === 'blob' &&
-      file.path !== '.git' && // Não ignora arquivos com .git no nome
-      !file.path.startsWith('.git/') && // Só ignora o diretório .git
-      !file.path.includes('node_modules') &&
-      !file.path.includes('target') &&
-      !file.path.includes('.idea') &&
-      !file.path.endsWith('.log') &&
-      !file.path.endsWith('.env') &&
-      !file.path.endsWith('.gif') &&
-      !file.path.endsWith('.png') &&
-      !file.path.endsWith('.img')
-    );    
+      !shouldIgnoreFile(file.path)
+    );
 
     let fullContent = '';
 
@@ -58,7 +67,7 @@ async function getGitHubRepoContent(repoUrl) {
       const content = Buffer.from(fileResponse.data.content, 'base64').toString('utf-8');
       fullContent += `\n\n===== FILE: ${file.path} =====\n${content}\n`;
     }
-    
+
     console.log('Todos os arquivos lidos com sucesso (GitHub).');
     return fullContent;
 
@@ -112,24 +121,10 @@ async function getGitLabRepoContent(repoUrl) {
       const items = response.data;
 
       for (const item of items) {
-        // === FILTRO para ignorar pastas ou arquivos desnecessários ===
-        if (
-          item.path.startsWith('.git/') || // Apenas o diretório .git
-          item.path === '.git' ||          // Diretório .git raiz
-          item.path.includes('node_modules') ||
-          item.path.includes('target') ||
-          item.path.includes('.idea') ||
-          item.path.includes('.jsons') ||
-          item.path.endsWith('.log') ||
-          item.path.endsWith('.lock') ||
-          item.path.endsWith('.gif') ||
-          item.path.endsWith('.png') ||
-          item.path.endsWith('.img')
-        ) {
+        if (shouldIgnoreFile(item.path)) {
           console.log(`Ignorando: ${item.path}`);
           continue;
         }
-        
 
         if (item.type === 'blob') {
           console.log(`Lendo arquivo: ${item.path}`);
@@ -142,19 +137,17 @@ async function getGitLabRepoContent(repoUrl) {
           const content = fileResponse.data;
           fullContent += `\n\n===== FILE: ${item.path} =====\n${content}\n`;
         } else if (item.type === 'tree') {
-          // Se for pasta, chama recursivamente
           await processDirectory(item.path);
         }
       }
     }
 
-    // Inicia a busca do root
     await processDirectory();
 
     console.log('Todos os arquivos lidos com sucesso (GitLab).');
 
-    // === Limitar tamanho total enviado para OpenAI ===
-    if (fullContent.length > 25000) { // Ajuste esse limite como quiser
+    // === Limitar tamanho total enviado para OpenAI (opcional) ===
+    if (fullContent.length > 25000) {
       console.log('Conteúdo muito grande, truncando...');
       fullContent = fullContent.substring(0, 25000);
     }
