@@ -20,17 +20,46 @@ app.use(bodyParser.json());
 =========================================== */
 function shouldIgnoreFile(path) {
   return (
-    path.startsWith('.git/') || path === '.git' || // Ignora só o diretório .git
+    path.startsWith('.git/') || path === '.git' ||
     path.includes('node_modules') ||
     path.includes('target') ||
     path.includes('.idea') ||
-    path.includes('.jsons') || // relatórios mochawesome
+    path.includes('cypress/results') ||       // Ignora relatórios Cypress
+    path.includes('coverage') ||              // Ignora pastas de coverage
+    path.includes('dist') ||                  // Ignora builds front-end
+    path.includes('build') ||                 // Idem
+    path.includes('reports') ||               // Relatórios genéricos
+    path.includes('__snapshots__') ||         // Teste visual / Jest
+    path.includes('__image_snapshots__') ||
+    path.includes('.nyc_output') ||
+    path.includes('.vscode') ||
     path.endsWith('.log') ||
     path.endsWith('.lock') ||
     path.endsWith('.gif') ||
     path.endsWith('.png') ||
-    path.endsWith('.img') ||
-    path.endsWith('.env')
+    path.endsWith('.jpg') ||
+    path.endsWith('.jpeg') ||
+    path.endsWith('.svg') ||
+    path.endsWith('.webp') ||
+    path.endsWith('.ico') ||
+    path.endsWith('.woff') ||
+    path.endsWith('.woff2') ||
+    path.endsWith('.ttf') ||
+    path.endsWith('.eot') ||
+    path.endsWith('.otf') ||
+    path.endsWith('.mp4') ||
+    path.endsWith('.webm') ||
+    path.endsWith('.pdf') ||
+    path.endsWith('.env') ||
+    path.endsWith('.DS_Store') ||
+    path.endsWith('.yarn') ||
+    path.endsWith('.gz') ||
+    path.endsWith('.zip') ||
+    path.endsWith('.7z') ||
+    path.endsWith('.tar') ||
+    path.endsWith('.rar') ||
+    path.endsWith('.exe') ||
+    path.endsWith('.dll')
   );
 }
 
